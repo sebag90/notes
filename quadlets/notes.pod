@@ -1,0 +1,6 @@
+[Pod]
+PodName=notes
+Network=website.network
+
+[Install]
+WantedBy=default.target

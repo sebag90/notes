@@ -1,0 +1,20 @@
+[Unit]
+Description=Notes Postgres
+
+[Container]
+ContainerName=notes-db
+Image=docker.io/library/postgres:16-alpine
+Volume=notes-db.volume:/var/lib/postgresql/data
+AutoUpdate=registry
+
+HealthCmd=pg_isready -U notes
+HealthInterval=10s
+
+Pod=notes.pod
+EnvironmentFile=/home/seba/containers_data/notes/db.env
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

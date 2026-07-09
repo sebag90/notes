@@ -1,0 +1,17 @@
+[Unit]
+Description=Notes Backend (FastAPI)
+
+[Container]
+ContainerName=notes-backend
+Image=ghcr.io/sebag90/notes-backend:latest
+AutoUpdate=registry
+EnvironmentFile=/home/seba/containers_data/notes/backend.env
+Volume=/home/seba/containers_data/notes/htpasswd:/etc/notes/htpasswd:ro,Z
+
+Pod=notes.pod
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
