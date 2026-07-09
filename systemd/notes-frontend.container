@@ -1,0 +1,9 @@
+[Unit]
+Requires=notes-backend.service
+After=notes-backend.service
+
+[Container]
+ContainerName=notes-frontend
+Image=localhost/notes-frontend:latest
+Network=notes-net.network
+PublishPort=8081:80

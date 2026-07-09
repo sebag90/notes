@@ -1,0 +1,7 @@
+[Container]
+ContainerName=notes-db
+Environment=POSTGRES_USER=notes POSTGRES_PASSWORD=notes POSTGRES_DB=notes
+Image=docker.io/library/postgres:16-alpine
+Network=notes-net.network
+PublishPort=5433:5432
+Volume=notes-db-data:/var/lib/postgresql/data

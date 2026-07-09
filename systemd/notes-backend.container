@@ -1,0 +1,11 @@
+[Unit]
+Requires=notes-db.service
+After=notes-db.service
+
+[Container]
+ContainerName=notes-backend
+Environment=DATABASE_URL=postgresql://notes:notes@notes-db:5432/notes HTPASSWD_PATH=/etc/notes/htpasswd JWT_SECRET=super-secret-notes-key-change-in-production-12345!
+Image=localhost/notes-backend:latest
+Network=notes-net.network
+PublishPort=8001:8000
+Volume=/home/seba/code/notes/auth/.htpasswd:/etc/notes/htpasswd:ro

@@ -1,0 +1,47 @@
+services:
+  notes-db:
+    container_name: notes-db
+    image: docker.io/library/postgres:16-alpine
+    environment:
+      POSTGRES_USER: notes
+      POSTGRES_PASSWORD: notes
+      POSTGRES_DB: notes
+    ports:
+      - "5433:5432"
+    volumes:
+      - notes-db-data:/var/lib/postgresql/data
+    networks:
+      - notes-net
+
+  notes-backend:
+    container_name: notes-backend
+    image: localhost/notes-backend:latest
+    environment:
+      DATABASE_URL: postgresql://notes:notes@notes-db:5432/notes
+      HTPASSWD_PATH: /etc/notes/htpasswd
+      JWT_SECRET: super-secret-notes-key-change-in-production-12345!
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./auth/.htpasswd:/etc/notes/htpasswd:ro,z
+    networks:
+      - notes-net
+    depends_on:
+      - notes-db
+
+  notes-frontend:
+    container_name: notes-frontend
+    image: localhost/notes-frontend:latest
+    ports:
+      - "8081:80"
+    networks:
+      - notes-net
+    depends_on:
+      - notes-backend
+
+volumes:
+  notes-db-data:
+
+networks:
+  notes-net:
+    driver: bridge

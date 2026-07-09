@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Notes</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z'/%3E%3Cpath d='M6 6h10'/%3E%3Cpath d='M6 10h10'/%3E%3Cpath d='M6 14h10'/%3E%3C/svg%3E">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Marked.js for markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-mono {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Markdown Preview Styling */
+        .markdown-preview h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.25rem;
+            color: #0f172a;
+        }
+        .markdown-preview h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+        .markdown-preview h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #334155;
+        }
+        .markdown-preview p {
+            margin-bottom: 1rem;
+            line-height: 1.625;
+            color: #334155;
+        }
+        .markdown-preview ul, .markdown-preview ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        .markdown-preview ul {
+            list-style-type: disc;
+        }
+        .markdown-preview ol {
+            list-style-type: decimal;
+        }
+        .markdown-preview li {
+            margin-bottom: 0.25rem;
+            color: #334155;
+        }
+        .markdown-preview code {
+            font-family: 'Fira Code', monospace;
+            background-color: #f1f5f9;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+            color: #0f172a;
+        }
+        .markdown-preview pre {
+            background-color: #1e293b;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        .markdown-preview pre code {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+            color: #f8fafc;
+        }
+        .markdown-preview blockquote {
+            border-left: 4px solid #cbd5e1;
+            padding-left: 1rem;
+            font-style: italic;
+            color: #475569;
+            margin-bottom: 1rem;
+        }
+        .markdown-preview table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        .markdown-preview th, .markdown-preview td {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+        .markdown-preview th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+        .markdown-preview a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+        .markdown-preview a:hover {
+            color: #2563eb;
+        }
+        .markdown-preview hr {
+            margin: 1.5rem 0;
+            border: 0;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden text-slate-800">
+
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border border-slate-100">
+            <div class="text-center mb-8">
+                <div class="inline-flex p-3 bg-indigo-50 text-indigo-600 rounded-lg mb-3">
+                    <i data-lucide="book-open" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900">Sign in to Notes</h2>
+                <p class="text-slate-500 mt-1">Access your folders and markdown files</p>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div id="login-error" class="hidden p-3 bg-red-50 text-red-600 border border-red-100 rounded-lg text-sm"></div>
+                
+                <div>
+                    <label for="username" class="block text-sm font-medium text-slate-700">Username</label>
+                    <input type="text" id="username" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
+                    <input type="password" id="password" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div id="workspace" class="hidden h-full flex flex-row overflow-hidden">
+        
+        <!-- Sidebar -->
+        <div class="w-72 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 overflow-hidden border-r border-slate-800">
+            <!-- Sidebar Header -->
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-white">
+                    <i data-lucide="notebook-tabs" class="text-indigo-400 w-6 h-6"></i>
+                    <span class="font-bold text-lg">Markdown Notes</span>
+                </div>
+                <button id="logout-btn" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors" title="Log Out">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <!-- User Profile Bar -->
+            <div class="px-4 py-2 bg-slate-950 flex items-center space-x-2 text-xs text-slate-400 border-b border-slate-800">
+                <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                <span>Logged in as: <strong id="logged-in-user" class="text-slate-200">admin</strong></span>
+            </div>
+
+            <!-- Global Actions -->
+            <div class="p-3 grid grid-cols-2 gap-2 border-b border-slate-800 bg-slate-900/50">
+                <button id="btn-new-root-folder" class="flex items-center justify-center space-x-1.5 py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded text-xs font-medium transition-colors">
+                    <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-indigo-400"></i>
+                    <span>+ Folder</span>
+                </button>
+                <button id="btn-new-root-note" class="flex items-center justify-center space-x-1.5 py-1.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium transition-colors">
+                    <i data-lucide="file-plus" class="w-3.5 h-3.5"></i>
+                    <span>+ Note</span>
+                </button>
+            </div>
+
+            <!-- Tree Container -->
+            <div id="tree-container" class="flex-1 overflow-y-auto p-2 space-y-1">
+                <!-- Recursive tree view will be injected here -->
+            </div>
+        </div>
+
+        <!-- Main Content Pane -->
+        <div class="flex-1 flex flex-col overflow-hidden bg-white">
+            
+            <!-- Empty State / Welcome Screen -->
+            <div id="welcome-pane" class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-50">
+                <div class="max-w-md space-y-4">
+                    <div class="inline-flex p-4 bg-indigo-50 text-indigo-600 rounded-full">
+                        <i data-lucide="pen-tool" class="w-12 h-12"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">Welcome to Notes</h2>
+                    <p class="text-slate-500">Create folders and notes using the sidebar buttons, or select an existing note to start writing beautiful markdown.</p>
+                    <div class="flex flex-col space-y-2 border border-slate-200 rounded-lg p-4 bg-white text-left text-sm">
+                        <h4 class="font-semibold text-slate-700">Quick Keyboard Shortcuts</h4>
+                        <div class="flex justify-between text-slate-500">
+                            <span>Tab</span>
+                            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-xs font-mono">Insert 4 Spaces</kbd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Note Workspace -->
+            <div id="editor-pane" class="hidden flex-1 flex flex-col overflow-hidden">
+                <!-- Note Header/Toolbar -->
+                <div class="h-14 border-b border-slate-200 px-4 flex items-center justify-between bg-white flex-shrink-0 select-none">
+                    <div class="flex items-center space-x-3 overflow-hidden mr-4">
+                        <i data-lucide="file-text" class="text-indigo-500 flex-shrink-0 w-5 h-5"></i>
+                        <div class="flex flex-col min-w-0">
+                            <!-- Breadcrumb -->
+                            <div id="note-breadcrumbs" class="text-xxs text-slate-400 font-medium truncate flex items-center space-x-1">
+                                <span>Root</span>
+                            </div>
+                            <!-- Title Input -->
+                            <input type="text" id="note-title-input" class="text-base font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-b focus:border-indigo-500 w-64 sm:w-96 py-0.5" placeholder="Untitled Note">
+                        </div>
+                    </div>
+
+                    <!-- Toolbar Actions -->
+                    <div class="flex items-center space-x-2">
+                        <!-- Auto-Save Status -->
+                        <div class="flex items-center text-xs text-slate-400 mr-2" id="save-status">
+                            <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500 mr-1 hidden" id="save-status-saved"></i>
+                            <span class="animate-spin mr-1 hidden" id="save-status-saving">
+                                <i data-lucide="loader-2" class="w-3.5 h-3.5 text-indigo-500"></i>
+                            </span>
+                            <span id="save-status-text">Saved</span>
+                        </div>
+
+                        <!-- Workspace Modes -->
+                        <div class="bg-slate-100 p-0.5 rounded-lg flex space-x-1 text-xs font-medium text-slate-600">
+                            <button id="mode-edit" class="px-2.5 py-1 rounded-md bg-white text-slate-800 shadow-xs flex items-center space-x-1 transition-all">
+                                <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                                <span class="hidden sm:inline">Edit</span>
+                            </button>
+                            <button id="mode-split" class="px-2.5 py-1 rounded-md hover:text-slate-800 flex items-center space-x-1 transition-all">
+                                <i data-lucide="columns-2" class="w-3.5 h-3.5"></i>
+                                <span class="hidden sm:inline">Split</span>
+                            </button>
+                            <button id="mode-preview" class="px-2.5 py-1 rounded-md hover:text-slate-800 flex items-center space-x-1 transition-all">
+                                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                <span class="hidden sm:inline">Preview</span>
+                            </button>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="h-6 w-px bg-slate-200"></div>
+
+                        <!-- Move Note -->
+                        <button id="toolbar-move-note" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors" title="Move Note">
+                            <i data-lucide="folder-input" class="w-4 h-4"></i>
+                        </button>
+
+                        <!-- Delete Note -->
+                        <button id="toolbar-delete-note" class="p-1.5 rounded-lg hover:bg-slate-50 text-slate-500 hover:text-red-600 transition-colors" title="Delete Note">
+                            <i data-lucide="trash" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Work Area (Split/Single Pane) -->
+                <div class="flex-1 flex flex-row overflow-hidden relative">
+                    <!-- Text Editor Pane -->
+                    <div id="pane-editor" class="flex-1 flex flex-col h-full bg-slate-50/50">
+                        <textarea id="markdown-textarea" class="flex-1 p-6 resize-none focus:outline-none bg-transparent font-mono text-sm leading-relaxed text-slate-800 placeholder-slate-400 overflow-y-auto" placeholder="Write markdown content here..."></textarea>
+                    </div>
+                    
+                    <!-- Split Divider -->
+                    <div id="pane-divider" class="w-px bg-slate-200 h-full"></div>
+
+                    <!-- HTML Preview Pane -->
+                    <div id="pane-preview" class="flex-1 p-8 overflow-y-auto bg-white h-full markdown-preview">
+                        <!-- Markdown gets parsed and injected here -->
+                    </div>
+                </div>
+
+                <!-- Footer (Metadata) -->
+                <div class="h-8 border-t border-slate-100 px-4 flex items-center justify-between bg-slate-50 text-xxs text-slate-400 select-none">
+                    <div id="note-word-count">0 words</div>
+                    <div id="note-dates-display">Created: - | Updated: -</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Folder Modal (Create / Rename) -->
+    <div id="folder-modal" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl border border-slate-100 w-full max-w-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                <h3 id="folder-modal-title" class="font-semibold text-slate-800">New Folder</h3>
+                <button class="modal-close text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="folder-form" class="p-4 space-y-4">
+                <input type="hidden" id="folder-modal-parent-id">
+                <input type="hidden" id="folder-modal-edit-id">
+                <div>
+                    <label for="folder-name-input" class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Folder Name</label>
+                    <input type="text" id="folder-name-input" required class="block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Work, Home, Recipes...">
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" class="modal-close py-1.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="py-1.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Note Move Modal -->
+    <div id="move-modal" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl border border-slate-100 w-full max-w-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                <h3 class="font-semibold text-slate-800">Move Item</h3>
+                <button class="modal-close text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="move-form" class="p-4 space-y-4">
+                <input type="hidden" id="move-modal-item-id">
+                <input type="hidden" id="move-modal-item-type"> <!-- 'note' or 'folder' -->
+                <div>
+                    <label for="move-folder-select" class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Select Destination Folder</label>
+                    <select id="move-folder-select" class="block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" class="modal-close py-1.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="py-1.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+                        Move
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main JS Application -->
+    <script src="app.js"></script>
+</body>
+</html>
