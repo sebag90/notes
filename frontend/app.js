@@ -22,6 +22,9 @@ const el = {
     passwordInput: document.getElementById('password'),
     
     workspace: document.getElementById('workspace'),
+    sidebar: document.getElementById('sidebar'),
+    contentPane: document.getElementById('content-pane'),
+    mobileBackBtn: document.getElementById('mobile-back-btn'),
     logoutBtn: document.getElementById('logout-btn'),
     loggedInUser: document.getElementById('logged-in-user'),
     treeContainer: document.getElementById('tree-container'),
@@ -72,6 +75,7 @@ const el = {
 function init() {
     setupEventListeners();
     applyEditorMode(state.editorMode);
+    window.addEventListener('resize', updateResponsiveLayout);
     
     if (state.token) {
         showWorkspace();
@@ -85,6 +89,11 @@ function setupEventListeners() {
     // Login
     el.loginForm.addEventListener('submit', handleLogin);
     el.logoutBtn.addEventListener('click', handleLogout);
+    
+    // Mobile Back Button
+    if (el.mobileBackBtn) {
+        el.mobileBackBtn.addEventListener('click', () => deselectNote());
+    }
     
     // Root Actions
     el.btnNewRootFolder.addEventListener('click', () => openFolderModal(null));
@@ -242,6 +251,7 @@ async function showWorkspace() {
     
     await loadData();
     lucide.createIcons();
+    updateResponsiveLayout();
 }
 
 // Data Loading
@@ -499,6 +509,11 @@ function getFolderDepth(folderId) {
 
 // Note Selection
 function selectNote(noteId) {
+    if (!noteId) {
+        deselectNote();
+        return;
+    }
+
     // Save any pending changes first
     if (state.saveTimeout) {
         clearTimeout(state.saveTimeout);
@@ -536,6 +551,8 @@ function selectNote(noteId) {
     el.saveStatusSaved.classList.remove('hidden');
     el.saveStatusSaving.classList.add('hidden');
     el.saveStatusText.textContent = 'Saved';
+    
+    updateResponsiveLayout();
 }
 
 function updateNoteBreadcrumbs(note) {
@@ -712,10 +729,7 @@ async function confirmAndDeleteNote(noteId) {
             await apiFetch(`/notes/${noteId}`, { method: 'DELETE' });
             
             state.notes = state.notes.filter(n => n.id !== noteId);
-            state.activeNoteId = null;
-            
-            el.editorPane.classList.add('hidden');
-            el.welcomePane.classList.remove('hidden');
+            deselectNote();
             
             renderTree();
         } catch (err) {
@@ -742,9 +756,7 @@ async function confirmAndDeleteFolder(folderId) {
             
             // Clean up active selected note if it was deleted
             if (state.activeNoteId && state.notes.findIndex(n => n.id === state.activeNoteId) === -1) {
-                state.activeNoteId = null;
-                el.editorPane.classList.add('hidden');
-                el.welcomePane.classList.remove('hidden');
+                deselectNote();
             }
             
             // Remove from expanded state
@@ -946,15 +958,72 @@ function closeAllModals() {
     el.moveModal.classList.add('hidden');
 }
 
+// Responsive layout toggling for Mobile View
+function updateResponsiveLayout() {
+    const isMobile = window.innerWidth < 768;
+    
+    // Also re-apply editor mode to handle responsive split-view transitions
+    applyEditorMode(state.editorMode);
+
+    if (isMobile) {
+        if (state.activeNoteId) {
+            // Note is selected: hide sidebar, show content pane (editor)
+            el.sidebar.classList.add('hidden');
+            el.sidebar.classList.remove('w-full');
+            el.contentPane.classList.remove('hidden');
+            el.contentPane.classList.add('w-full');
+        } else {
+            // No note selected (list view): show sidebar, hide content pane
+            el.sidebar.classList.remove('hidden');
+            el.sidebar.classList.add('w-full');
+            el.contentPane.classList.add('hidden');
+            el.contentPane.classList.remove('w-full');
+        }
+    } else {
+        // Desktop view: restore side-by-side layout
+        el.sidebar.classList.remove('hidden', 'w-full');
+        el.sidebar.classList.add('w-72');
+        el.contentPane.classList.remove('hidden', 'w-full');
+    }
+}
+
+function deselectNote() {
+    if (state.saveTimeout) {
+        clearTimeout(state.saveTimeout);
+        saveNoteImmediately();
+    }
+    state.activeNoteId = null;
+    
+    // Reset selection styles in sidebar
+    document.querySelectorAll('.note-row').forEach(row => {
+        row.setAttribute('class', 'note-row flex items-center justify-between py-1 px-2 rounded cursor-pointer group transition-all text-slate-400 hover:bg-slate-800 hover:text-slate-200');
+        const icon = row.querySelector('svg');
+        if (icon) {
+            icon.setAttribute('class', 'lucide lucide-file-text w-3.5 h-3.5 flex-shrink-0 text-slate-500');
+        }
+    });
+    
+    el.editorPane.classList.add('hidden');
+    el.welcomePane.classList.remove('hidden');
+    
+    updateResponsiveLayout();
+}
+
 // Editor Workspace Styling & Tabs
 function applyEditorMode(mode) {
+    let targetMode = mode;
+    // On small screens, force 'edit' or 'preview' if mode is 'split'
+    if (window.innerWidth < 768 && targetMode === 'split') {
+        targetMode = 'edit';
+    }
+
     state.editorMode = mode;
     localStorage.setItem('notes_editor_mode', mode);
     
     // Toggle active tab styles
     const btnMap = { edit: el.modeEdit, split: el.modeSplit, preview: el.modePreview };
     Object.keys(btnMap).forEach(key => {
-        if (key === mode) {
+        if (key === targetMode) {
             btnMap[key].setAttribute('class', 'px-2.5 py-1 rounded-md bg-white text-slate-800 shadow-xs flex items-center space-x-1 transition-all font-semibold');
         } else {
             btnMap[key].setAttribute('class', 'px-2.5 py-1 rounded-md hover:text-slate-800 flex items-center space-x-1 transition-all');
@@ -962,11 +1031,11 @@ function applyEditorMode(mode) {
     });
     
     // Show/Hide panes based on mode
-    if (mode === 'edit') {
+    if (targetMode === 'edit') {
         el.paneEditor.classList.remove('hidden');
         el.panePreview.classList.add('hidden');
         el.paneDivider.classList.add('hidden');
-    } else if (mode === 'preview') {
+    } else if (targetMode === 'preview') {
         el.paneEditor.classList.add('hidden');
         el.panePreview.classList.remove('hidden');
         el.paneDivider.classList.add('hidden');
