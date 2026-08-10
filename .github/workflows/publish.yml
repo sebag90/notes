@@ -78,3 +78,20 @@ jobs:
           labels: ${{ steps.meta-frontend.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  cleanup:
+    name: Cleanup Old Container Versions
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    concurrency:
+      group: cleanup-images
+    permissions:
+      packages: write
+    steps:
+      - name: Cleanup Old GHCR Images
+        uses: step-security/ghcr-cleanup-action@v1
+        with:
+          packages: 'notes-backend, notes-frontend'
+          keep-n-tagged: 3
+          token: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
+
